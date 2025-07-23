@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Authentication Endpoint")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("v1/api/auth")
 public class AuthController implements AuthControllerDocs {
 
     @Autowired
@@ -45,7 +45,7 @@ public class AuthController implements AuthControllerDocs {
         return token;
     }
 
-    @PostMapping(value = "/createUser",
+    @PostMapping(value = "/register",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_YAML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_YAML_VALUE}
     )

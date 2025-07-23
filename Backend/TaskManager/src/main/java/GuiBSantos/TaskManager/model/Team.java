@@ -1,7 +1,6 @@
 package GuiBSantos.TaskManager.model;
 
 import jakarta.persistence.*;
-import org.springframework.scheduling.config.Task;
 
 import java.io.Serializable;
 import java.util.List;

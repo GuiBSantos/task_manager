@@ -2,7 +2,7 @@ package GuiBSantos.TaskManager.model;
 
 import GuiBSantos.TaskManager.Enum.Role;
 import jakarta.persistence.*;
-import org.springframework.scheduling.config.Task;
+import jakarta.validation.constraints.Email;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -22,6 +22,7 @@ public class User implements UserDetails, Serializable {
     private String name;
 
     @Column(unique = true)
+    @Email
     private String email;
 
     private String password;
@@ -66,12 +67,12 @@ public class User implements UserDetails, Serializable {
     }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return this.email;
     }
 
     @Override

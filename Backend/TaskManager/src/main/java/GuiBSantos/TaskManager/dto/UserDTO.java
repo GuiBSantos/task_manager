@@ -1,11 +1,9 @@
 package GuiBSantos.TaskManager.dto;
 
-import lombok.Data;
-
-@Data
-public class UserDTO {
-    private Long id;
-    private String name;
-    private String email;
-    private Long teamId;
-}
+public record UserDTO(
+        Long id,
+        String name,
+        String email,
+        String role,
+        Long teamId
+) {}

@@ -1,9 +1,6 @@
 package GuiBSantos.TaskManager.service;
 
-import GuiBSantos.TaskManager.dto.AccountCredentialsDTO;
-import GuiBSantos.TaskManager.dto.TokenDTO;
-import GuiBSantos.TaskManager.repository.UserRepository;
-import GuiBSantos.TaskManager.security.JwtTokenProvider;
+import GuiBSantos.TaskManager.Enum.Role;
 import GuiBSantos.TaskManager.dto.AccountCredentialsDTO;
 import GuiBSantos.TaskManager.dto.TokenDTO;
 import GuiBSantos.TaskManager.exception.RequiredObjectIsNullException;
@@ -22,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -47,60 +44,53 @@ public class AuthService {
                 )
         );
 
-        var user = userRepository.findByUsername(credentials.getUsername());
-        if(user == null) throw new UsernameNotFoundException("Username " + credentials.getPassword() + " not found");
+        var user = userRepository.findByEmail(credentials.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Username " + credentials.getUsername() + " not found"));
 
-        var token = jwtTokenProvider.createAccessToken(credentials.getUsername(), user.getRoles());
+        var token = jwtTokenProvider.createAccessToken(user.getEmail(), List.of(String.valueOf(user.getRole())));
 
         return ResponseEntity.ok(token);
     }
 
     public ResponseEntity<TokenDTO> refreshSignIn(String username, String refreshToken) {
+        var user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username " + username + " not found!"));
 
-        var user = userRepository.findByUsername(username);
-        TokenDTO token;
-
-        if (user != null) {
-            token = jwtTokenProvider.refreshToken(refreshToken);
-        } else {
-            throw new UsernameNotFoundException("Username " + username + " not found!");
-        }
+        var token = jwtTokenProvider.refreshToken(refreshToken);
         return ResponseEntity.ok(token);
     }
 
     private String generateHashedPassword(String password) {
+        PasswordEncoder encoder = new Pbkdf2PasswordEncoder(
+                "", 8, 185000, Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256);
 
-        PasswordEncoder pbkdf2Encoder = new Pbkdf2PasswordEncoder("", 8, 185000, Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256);
+        Map<String, PasswordEncoder> encoders = Map.of("pbkdf2", encoder);
 
-        Map<String, PasswordEncoder> encoders = new HashMap<>();
-        encoders.put("pbkdf2", pbkdf2Encoder);
+        DelegatingPasswordEncoder delegatingEncoder = new DelegatingPasswordEncoder("pbkdf2", encoders);
+        delegatingEncoder.setDefaultPasswordEncoderForMatches(encoder);
 
-        DelegatingPasswordEncoder passwordEncoder = new DelegatingPasswordEncoder("pbkdf2", encoders);
-        passwordEncoder.setDefaultPasswordEncoderForMatches(pbkdf2Encoder);
-        return passwordEncoder.encode(password);
-
+        return delegatingEncoder.encode(password);
     }
 
-    public AccountCredentialsDTO create(AccountCredentialsDTO user) {
+    public AccountCredentialsDTO create(AccountCredentialsDTO userDto) {
+        if (userDto == null) {
+            throw new RequiredObjectIsNullException();
+        }
 
-        if (user == null) throw new RequiredObjectIsNullException();
+        logger.info("Creating a new User!");
 
-        logger.info("Creating one new User!");
+        var user = new User();
+        user.setName(userDto.getFullname());
+        user.setEmail(userDto.getUsername());
+        user.setPassword(generateHashedPassword(userDto.getPassword()));
+        user.setRole(Role.MEMBRO);
 
-        var entity = new User();
+        var savedUser = userRepository.save(user);
 
-        entity.setFullname(user.getFullname());
-        entity.setUserName(user.getUsername());
-        entity.setPassword(generateHashedPassword(user.getPassword()));
-
-        entity.setAccountNonExpired(true);
-        entity.setAccountNonLocked(true);
-        entity.setCredentialsNonExpired(true);
-        entity.setEnabled(true);
-
-        var dto = userRepository.save(entity);
-
-        return new AccountCredentialsDTO(dto.getUsername(), dto.getPassword(), dto.getFullname());
-
+        return new AccountCredentialsDTO(
+                savedUser.getEmail(),
+                savedUser.getPassword(),
+                savedUser.getName()
+        );
     }
 }
