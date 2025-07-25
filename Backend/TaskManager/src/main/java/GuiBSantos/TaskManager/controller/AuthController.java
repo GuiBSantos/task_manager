@@ -1,7 +1,8 @@
 package GuiBSantos.TaskManager.controller;
 
 import GuiBSantos.TaskManager.docs.AuthControllerDocs;
-import GuiBSantos.TaskManager.dto.AccountCredentialsDTO;
+import GuiBSantos.TaskManager.dto.request.UserRegisterDTO;
+import GuiBSantos.TaskManager.dto.request.UserLoginDTO;
 import GuiBSantos.TaskManager.service.AuthService;
 import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,13 +22,13 @@ public class AuthController implements AuthControllerDocs {
 
     @PostMapping("/signin")
     @Override
-    public ResponseEntity<?> signIn(@RequestBody AccountCredentialsDTO credentials) {
+    public ResponseEntity<?> signIn(@RequestBody UserLoginDTO credentials) {
 
         if(credentialsIsInvalid(credentials)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Client request!");
 
         var token = service.signIn(credentials);
 
-        if(token == null) ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Client request!");
+        if(token == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Client request!");
 
        return token;
     }
@@ -40,27 +41,29 @@ public class AuthController implements AuthControllerDocs {
 
         var token = service.refreshSignIn(username, refreshToken);
 
-        if(token == null) ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Client request!");
+        if(token == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Client request!");
 
         return token;
     }
 
-    @PostMapping(value = "/register",
+    @PostMapping(
+            value = "/register",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_YAML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_YAML_VALUE}
     )
     @Override
-    public AccountCredentialsDTO create(@RequestBody AccountCredentialsDTO credentials) {
-        return service.create(credentials);
+    public ResponseEntity<UserRegisterDTO> create(@RequestBody UserRegisterDTO userDto) {
+        var createdUser = service.create(userDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     private boolean parametersAreInvalid(String username, String refreshToken) {
         return StringUtils.isBlank(username) || StringUtils.isBlank(refreshToken);
     }
 
-    private static boolean credentialsIsInvalid(AccountCredentialsDTO credentials) {
+    private static boolean credentialsIsInvalid(UserLoginDTO credentials) {
         return credentials == null ||
-                StringUtils.isBlank(credentials.getPassword()) ||
-                StringUtils.isBlank(credentials.getUsername());
+                StringUtils.isBlank(credentials.password()) ||
+                StringUtils.isBlank(credentials.email());
     }
 }

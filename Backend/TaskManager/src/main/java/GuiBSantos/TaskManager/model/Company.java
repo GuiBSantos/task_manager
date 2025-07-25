@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "companies")
@@ -15,7 +16,6 @@ public class Company implements Serializable {
     private Long id;
 
     private String name;
-
 
     @OneToMany(mappedBy = "company")
     private List<Team> teams;

@@ -1,8 +1,9 @@
 package GuiBSantos.TaskManager.service;
 
 import GuiBSantos.TaskManager.Enum.Role;
-import GuiBSantos.TaskManager.dto.AccountCredentialsDTO;
 import GuiBSantos.TaskManager.dto.TokenDTO;
+import GuiBSantos.TaskManager.dto.request.UserLoginDTO;
+import GuiBSantos.TaskManager.dto.request.UserRegisterDTO;
 import GuiBSantos.TaskManager.exception.RequiredObjectIsNullException;
 import GuiBSantos.TaskManager.model.User;
 import GuiBSantos.TaskManager.repository.UserRepository;
@@ -36,16 +37,16 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
-    public ResponseEntity<TokenDTO> signIn(AccountCredentialsDTO credentials) {
+    public ResponseEntity<TokenDTO> signIn(UserLoginDTO credentials) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        credentials.getUsername(),
-                        credentials.getPassword()
+                        credentials.email(),
+                        credentials.password()
                 )
         );
 
-        var user = userRepository.findByEmail(credentials.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Username " + credentials.getUsername() + " not found"));
+        var user = userRepository.findByEmail(credentials.email())
+                .orElseThrow(() -> new UsernameNotFoundException("Username " + credentials.email() + " not found"));
 
         var token = jwtTokenProvider.createAccessToken(user.getEmail(), List.of(String.valueOf(user.getRole())));
 
@@ -72,7 +73,7 @@ public class AuthService {
         return delegatingEncoder.encode(password);
     }
 
-    public AccountCredentialsDTO create(AccountCredentialsDTO userDto) {
+    public UserRegisterDTO create(UserRegisterDTO userDto) {
         if (userDto == null) {
             throw new RequiredObjectIsNullException();
         }
@@ -80,17 +81,18 @@ public class AuthService {
         logger.info("Creating a new User!");
 
         var user = new User();
-        user.setName(userDto.getFullname());
-        user.setEmail(userDto.getUsername());
-        user.setPassword(generateHashedPassword(userDto.getPassword()));
-        user.setRole(Role.MEMBRO);
+        user.setName(userDto.name());
+        user.setEmail(userDto.email());
+        user.setPassword(generateHashedPassword(userDto.password()));
+        user.setRole(Role.valueOf(userDto.role()));
 
         var savedUser = userRepository.save(user);
 
-        return new AccountCredentialsDTO(
+        return new UserRegisterDTO(
+                savedUser.getName(),
                 savedUser.getEmail(),
                 savedUser.getPassword(),
-                savedUser.getName()
+                savedUser.getRole().toString()
         );
     }
 }

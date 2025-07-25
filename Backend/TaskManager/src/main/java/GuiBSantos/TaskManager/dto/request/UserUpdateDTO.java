@@ -4,6 +4,5 @@ public record UserUpdateDTO(
         String name,
         String email,
         String password,
-        String role,
-        Long teamId
+        String role
 ) {}

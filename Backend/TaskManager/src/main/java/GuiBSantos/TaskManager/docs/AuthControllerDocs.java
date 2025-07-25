@@ -1,6 +1,7 @@
 package GuiBSantos.TaskManager.docs;
 
-import GuiBSantos.TaskManager.dto.AccountCredentialsDTO;
+import GuiBSantos.TaskManager.dto.request.UserLoginDTO;
+import GuiBSantos.TaskManager.dto.request.UserRegisterDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +20,7 @@ public interface AuthControllerDocs {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    ResponseEntity<?> signIn(AccountCredentialsDTO credentials);
+    ResponseEntity<?> signIn(UserLoginDTO credentials);
 
     @Operation(
             summary = "Refresh token for authenticated user and returns a token",
@@ -45,5 +46,5 @@ public interface AuthControllerDocs {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    AccountCredentialsDTO create(AccountCredentialsDTO credentials);
+    ResponseEntity<UserRegisterDTO> create(UserRegisterDTO credentials);
 }

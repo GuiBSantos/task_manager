@@ -30,12 +30,36 @@ public class User implements UserDetails, Serializable {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
     @ManyToOne
     @JoinColumn(name = "team_id")
     private Team team;
 
     @OneToMany(mappedBy = "assignedTo")
     private List<Task> tasks;
+
+    public User() {
+    }
+
+    public User(Long id, String name, String email, String password, Role role, Team team, List<Task> tasks) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.team = team;
+        this.tasks = tasks;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
 
     public Long getId() {
         return id;

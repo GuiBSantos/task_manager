@@ -20,6 +20,9 @@ public class Team implements Serializable {
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
     @OneToMany(mappedBy = "team")
     private List<User> users;
 
@@ -32,6 +35,14 @@ public class Team implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
     public String getName() {

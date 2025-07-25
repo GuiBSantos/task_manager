@@ -1,9 +1,8 @@
 package GuiBSantos.TaskManager.dto.request;
 
-public record UserCreateDTO(
+public record UserRegisterDTO(
         String name,
         String email,
         String password,
-        String role,
-        Long teamId
+        String role
 ) {}
