@@ -1,8 +1,8 @@
 package GuiBSantos.TaskManager.docs;
 
-import GuiBSantos.TaskManager.dto.UserDTO;
-import GuiBSantos.TaskManager.dto.request.UserSetTeamDTO;
-import GuiBSantos.TaskManager.dto.request.UserUpdateDTO;
+import GuiBSantos.TaskManager.dto.TeamDTO;
+import GuiBSantos.TaskManager.dto.request.TeamCreateDTO;
+import GuiBSantos.TaskManager.dto.request.TeamUpdateDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,35 +10,47 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-public interface UserControllerDocs {
+public interface TeamControllerDocs {
 
     @Operation(
-            summary = "List all users",
-            description = "Retrieves a list of all registered users.",
-            tags = {"User Management"},
+            summary = "Create a team",
+            description = "Creates a new team with the provided information.",
+            tags = {"Team Management"},
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = @Content),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+            }
+    )
+    ResponseEntity<TeamDTO> create(TeamCreateDTO dto);
+
+    @Operation(
+            summary = "List all teams",
+            description = "Retrieves a list of all registered teams.",
+            tags = {"Team Management"},
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    ResponseEntity<List<UserDTO>> findAll();
+    ResponseEntity<List<TeamDTO>> findAll();
 
     @Operation(
-            summary = "Find user by ID",
-            description = "Retrieves a specific user by their ID.",
-            tags = {"User Management"},
+            summary = "Find team by ID",
+            description = "Retrieves a specific team by its ID.",
+            tags = {"Team Management"},
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content),
                     @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    ResponseEntity<UserDTO> findById(Long id);
+    ResponseEntity<TeamDTO> findById(Long id);
 
     @Operation(
-            summary = "Update user",
-            description = "Updates an existing user's information by ID.",
-            tags = {"User Management"},
+            summary = "Update team",
+            description = "Updates an existing team's information by ID.",
+            tags = {"Team Management"},
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200", content = @Content),
                     @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
@@ -46,25 +58,12 @@ public interface UserControllerDocs {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    ResponseEntity<UserDTO> update(Long id, UserUpdateDTO dto);
+    ResponseEntity<TeamDTO> update(Long id, TeamUpdateDTO dto);
 
     @Operation(
-            summary = "Assign a team to a user",
-            description = "Associates an existing user to a team based on their respective IDs.",
-            tags = {"User Management"},
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200", content = @Content),
-                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
-                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
-                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
-            }
-    )
-    ResponseEntity<UserDTO> setTeam(Long id, UserSetTeamDTO dto);
-
-    @Operation(
-            summary = "Delete user",
-            description = "Deletes an existing user by ID.",
-            tags = {"User Management"},
+            summary = "Delete team",
+            description = "Deletes an existing team by ID.",
+            tags = {"Team Management"},
             responses = {
                     @ApiResponse(description = "No Content", responseCode = "204", content = @Content),
                     @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),

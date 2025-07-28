@@ -1,6 +1,6 @@
 package GuiBSantos.TaskManager.dto.request;
 
-public record UserLoginDTO(
+public record UserAuthLoginDTO(
         String email,
         String password) {
 }

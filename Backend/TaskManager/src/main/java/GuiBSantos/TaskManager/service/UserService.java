@@ -2,10 +2,14 @@ package GuiBSantos.TaskManager.service;
 
 import GuiBSantos.TaskManager.Enum.Role;
 import GuiBSantos.TaskManager.dto.UserDTO;
-import GuiBSantos.TaskManager.dto.request.UserRegisterDTO;
+import GuiBSantos.TaskManager.dto.request.UserAuthRegisterDTO;
+import GuiBSantos.TaskManager.dto.request.UserSetTeamDTO;
 import GuiBSantos.TaskManager.dto.request.UserUpdateDTO;
+import GuiBSantos.TaskManager.model.Team;
 import GuiBSantos.TaskManager.model.User;
+import GuiBSantos.TaskManager.repository.TeamRepository;
 import GuiBSantos.TaskManager.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,21 +28,10 @@ public class UserService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Autowired
+    private TeamRepository teamRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
-
-    public UserDTO create(UserRegisterDTO dto) {
-        validateUserRegisterDTO(dto);
-
-        var user = new User();
-        user.setName(dto.name());
-        user.setEmail(dto.email());
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        user.setRole(Role.valueOf(dto.role()));
-        user.setDeleted(false);
-
-        var saved = userRepository.save(user);
-        return convertToDTO(saved);
-    }
 
     public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
@@ -92,6 +85,42 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    @Transactional(rollbackOn = Exception.class)
+    public UserDTO assignTeam(Long userId, UserSetTeamDTO dto) {
+        if (userId == null || dto == null || dto.id() == null) {
+            throw new IllegalArgumentException("UserId and teamId must not be null");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        if (user.getDeleted()) {
+            throw new RuntimeException("Cannot assign team to a deleted user");
+        }
+
+        Team team = teamRepository.findById(dto.id())
+                .orElseThrow(() -> new RuntimeException("Team not found with id: " + dto.id()));
+
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() == Role.MEMBRO) {
+            if (!currentUser.getId().equals(user.getId())) {
+                throw new SecurityException("Members can only change their own team");
+            }
+
+            if (user.getTeam() != null && !user.getTeam().getId().equals(team.getId())) {
+                throw new SecurityException("Members cannot change their team");
+            }
+        } else if (currentUser.getRole() != Role.GERENTE && currentUser.getRole() != Role.ADMIN) {
+            throw new SecurityException("You do not have permission to assign teams");
+        }
+
+        user.setTeam(team);
+        User updated = userRepository.save(user);
+
+        return convertToDTO(updated);
+    }
+
     private User findUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -120,14 +149,6 @@ public class UserService implements UserDetailsService {
         return canUpdate(currentUser, targetUser);
     }
 
-    private void validateUserRegisterDTO(UserRegisterDTO dto) {
-        if (dto == null) throw new IllegalArgumentException("User data must not be null");
-        if (isBlank(dto.name())) throw new IllegalArgumentException("Name is required");
-        if (isBlank(dto.email())) throw new IllegalArgumentException("Email is required");
-        if (isBlank(dto.password())) throw new IllegalArgumentException("Password is required");
-        if (isBlank(dto.role())) throw new IllegalArgumentException("Role is required");
-    }
-
     private void validateUserUpdateDTO(UserUpdateDTO dto) {
         if (dto == null) throw new IllegalArgumentException("User update data must not be null");
         if (isBlank(dto.name())) throw new IllegalArgumentException("Name is required");
@@ -144,7 +165,8 @@ public class UserService implements UserDetailsService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getTeam() != null ? user.getTeam().getId() : null
         );
     }
 

@@ -50,9 +50,10 @@ public class SecurityConfig {
                         "v1/api/auth/refresh/**",
                         "v1/api/auth/register",
                         "/swagger-ui/**",
+                        "/swagger-ui/index.html#/",
                         "/v3/api-docs/**"
                 ).permitAll()
-                                .requestMatchers("v1/api/**").authenticated()
+                                .requestMatchers("/v1/api/**").authenticated()
                                 .requestMatchers("/users").denyAll()
                 )
                 .cors(cors -> {})

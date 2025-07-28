@@ -1,8 +1,8 @@
 package GuiBSantos.TaskManager.controller;
 
 import GuiBSantos.TaskManager.docs.AuthControllerDocs;
-import GuiBSantos.TaskManager.dto.request.UserRegisterDTO;
-import GuiBSantos.TaskManager.dto.request.UserLoginDTO;
+import GuiBSantos.TaskManager.dto.request.UserAuthRegisterDTO;
+import GuiBSantos.TaskManager.dto.request.UserAuthLoginDTO;
 import GuiBSantos.TaskManager.service.AuthService;
 import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +22,7 @@ public class AuthController implements AuthControllerDocs {
 
     @PostMapping("/signin")
     @Override
-    public ResponseEntity<?> signIn(@RequestBody UserLoginDTO credentials) {
+    public ResponseEntity<?> signIn(@RequestBody UserAuthLoginDTO credentials) {
 
         if(credentialsIsInvalid(credentials)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Client request!");
 
@@ -48,11 +48,11 @@ public class AuthController implements AuthControllerDocs {
 
     @PostMapping(
             value = "/register",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_YAML_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_YAML_VALUE}
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
     @Override
-    public ResponseEntity<UserRegisterDTO> create(@RequestBody UserRegisterDTO userDto) {
+    public ResponseEntity<UserAuthRegisterDTO> create(@RequestBody UserAuthRegisterDTO userDto) {
         var createdUser = service.create(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -61,7 +61,7 @@ public class AuthController implements AuthControllerDocs {
         return StringUtils.isBlank(username) || StringUtils.isBlank(refreshToken);
     }
 
-    private static boolean credentialsIsInvalid(UserLoginDTO credentials) {
+    private static boolean credentialsIsInvalid(UserAuthLoginDTO credentials) {
         return credentials == null ||
                 StringUtils.isBlank(credentials.password()) ||
                 StringUtils.isBlank(credentials.email());

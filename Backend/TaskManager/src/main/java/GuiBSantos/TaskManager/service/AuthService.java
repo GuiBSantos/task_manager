@@ -2,8 +2,8 @@ package GuiBSantos.TaskManager.service;
 
 import GuiBSantos.TaskManager.Enum.Role;
 import GuiBSantos.TaskManager.dto.TokenDTO;
-import GuiBSantos.TaskManager.dto.request.UserLoginDTO;
-import GuiBSantos.TaskManager.dto.request.UserRegisterDTO;
+import GuiBSantos.TaskManager.dto.request.UserAuthLoginDTO;
+import GuiBSantos.TaskManager.dto.request.UserAuthRegisterDTO;
 import GuiBSantos.TaskManager.exception.RequiredObjectIsNullException;
 import GuiBSantos.TaskManager.model.User;
 import GuiBSantos.TaskManager.repository.UserRepository;
@@ -37,7 +37,7 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
-    public ResponseEntity<TokenDTO> signIn(UserLoginDTO credentials) {
+    public ResponseEntity<TokenDTO> signIn(UserAuthLoginDTO credentials) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         credentials.email(),
@@ -73,7 +73,7 @@ public class AuthService {
         return delegatingEncoder.encode(password);
     }
 
-    public UserRegisterDTO create(UserRegisterDTO userDto) {
+    public UserAuthRegisterDTO create(UserAuthRegisterDTO userDto) {
         if (userDto == null) {
             throw new RequiredObjectIsNullException();
         }
@@ -88,7 +88,7 @@ public class AuthService {
 
         var savedUser = userRepository.save(user);
 
-        return new UserRegisterDTO(
+        return new UserAuthRegisterDTO(
                 savedUser.getName(),
                 savedUser.getEmail(),
                 savedUser.getPassword(),

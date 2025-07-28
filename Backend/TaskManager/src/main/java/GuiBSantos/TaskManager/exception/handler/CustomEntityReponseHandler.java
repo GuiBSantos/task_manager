@@ -15,48 +15,42 @@ import java.util.Date;
 @RestController
 public class CustomEntityReponseHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<ExceptionResponse> handlerAllExceptions(Exception ex, WebRequest request) {
-        ExceptionResponse response = new ExceptionResponse(
-                new Date(),
-                ex.getMessage(),
-                request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(SecurityException.class)
+    public final ResponseEntity<ExceptionResponse> handleSecurityException(Exception ex, WebRequest request) {
+        return buildResponse(ex, request, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public final ResponseEntity<ExceptionResponse> handlerNotFoundExceptions(Exception ex, WebRequest request) {
-        ExceptionResponse response = new ExceptionResponse(
-                new Date(),
-                ex.getMessage(),
-                request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    public final ResponseEntity<ExceptionResponse> handleNotFoundException(Exception ex, WebRequest request) {
+        return buildResponse(ex, request, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RequiredObjectIsNullException.class)
-    public final ResponseEntity<ExceptionResponse> handlerRequiredObjectExceptions(Exception ex, WebRequest request) {
-        ExceptionResponse response = new ExceptionResponse(
-                new Date(),
-                ex.getMessage(),
-                request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    public final ResponseEntity<ExceptionResponse> handleRequiredObjectException(Exception ex, WebRequest request) {
+        return buildResponse(ex, request, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidJWTAuthenticationException.class)
-    public final ResponseEntity<ExceptionResponse> handlerInvalidJWTAuthenticationExceptions(Exception ex, WebRequest request) {
-        ExceptionResponse response = new ExceptionResponse(
-                new Date(),
-                ex.getMessage(),
-                request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    public final ResponseEntity<ExceptionResponse> handleInvalidJWTException(Exception ex, WebRequest request) {
+        return buildResponse(ex, request, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public final ResponseEntity<ExceptionResponse> handlerBadRequestExceptions(Exception ex, WebRequest request) {
+    public final ResponseEntity<ExceptionResponse> handleBadRequestException(Exception ex, WebRequest request) {
+        return buildResponse(ex, request, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public final ResponseEntity<ExceptionResponse> handleAllExceptions(Exception ex, WebRequest request) {
+        return buildResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<ExceptionResponse> buildResponse(Exception ex, WebRequest request, HttpStatus status) {
         ExceptionResponse response = new ExceptionResponse(
                 new Date(),
                 ex.getMessage(),
-                request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+                request.getDescription(false)
+        );
+        return new ResponseEntity<>(response, status);
     }
 }

@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Table(name = "tasks")
@@ -31,8 +30,13 @@ public class Task implements Serializable {
     @JoinColumn(name = "team_id")
     private Team team;
 
-    @OneToMany(mappedBy = "task")
-    private List<TaskHistory> history;
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TaskStatusHistory> statusHistory;
+
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
+    // Getters and setters
 
     public Long getId() {
         return id;
@@ -82,23 +86,38 @@ public class Task implements Serializable {
         this.team = team;
     }
 
-    public List<TaskHistory> getHistory() {
-        return history;
+    public List<TaskStatusHistory> getStatusHistory() {
+        return statusHistory;
     }
 
-    public void setHistory(List<TaskHistory> history) {
-        this.history = history;
+    public void setStatusHistory(List<TaskStatusHistory> statusHistory) {
+        this.statusHistory = statusHistory;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Task task)) return false;
-        return Objects.equals(getId(), task.getId()) && Objects.equals(getTitle(), task.getTitle()) && Objects.equals(getDescription(), task.getDescription()) && getStatus() == task.getStatus() && Objects.equals(getAssignedTo(), task.getAssignedTo()) && Objects.equals(getTeam(), task.getTeam()) && Objects.equals(getHistory(), task.getHistory());
+        return Objects.equals(getId(), task.getId()) &&
+                Objects.equals(getTitle(), task.getTitle()) &&
+                Objects.equals(getDescription(), task.getDescription()) &&
+                getStatus() == task.getStatus() &&
+                Objects.equals(getAssignedTo(), task.getAssignedTo()) &&
+                Objects.equals(getTeam(), task.getTeam()) &&
+                Objects.equals(getStatusHistory(), task.getStatusHistory()) &&
+                Objects.equals(getDeleted(), task.getDeleted());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getDescription(), getStatus(), getAssignedTo(), getTeam(), getHistory());
+        return Objects.hash(getId(), getTitle(), getDescription(), getStatus(),
+                getAssignedTo(), getTeam(), getStatusHistory(), getDeleted());
     }
 }
-
